@@ -87,18 +87,34 @@ app.post("/bfhl", async (req, res) => {
 
     else if (key === "AI") {
   try {
+    const prompt = `Answer in ONE WORD only.\nQuestion: ${body[key]}`;
+
     const response = await axios.post(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      { contents: [{ parts: [{ text: body[key] }] }] }
+      {
+        contents: [
+          {
+            parts: [{ text: prompt }]
+          }
+        ]
+      }
     );
 
-    data = response.data.candidates[0].content.parts[0].text
-      .split(" ")[0]
-      .replace(/[^\w]/g, "");
-  } catch {
-    data = "Unavailable";
+    let text =
+      response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+    data = text
+      .trim()
+      .split(/\s+/)[0]          
+      .replace(/[^A-Za-z]/g, ""); 
+
+    if (!data) data = "Unknown";
+
+  } catch (err) {
+    data = "Unknown";
   }
 }
+
 
 
     else {
